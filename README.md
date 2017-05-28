@@ -39,16 +39,15 @@ end
 You can also specify block for the `data` method.
 
 ```ruby
-  data do
-    data_set = {}
-    data_set["empty string"] = [true, ""]
-    data_set["plain string"] = [false, "hello"]
-    data_set
-  end
-  def test_empty(data)
-    expected, target = data
-    assert_equal(expected, target.empty?)
-  end
+data do
+  data_set = {}
+  data_set["empty string"] = [true, ""]
+  data_set["plain string"] = [false, "hello"]
+  data_set
+end
+def test_empty(data)
+  expected, target = data
+  assert_equal(expected, target.empty?)
 end
 ```
 
