@@ -1,6 +1,5 @@
 # Minitest::Data
 
-[![Build Status](https://travis-ci.org/y-yagi/minitest-data.svg?branch=master)](https://travis-ci.org/y-yagi/minitest-data)
 [![Gem Version](https://badge.fury.io/rb/minitest-data.svg)](http://badge.fury.io/rb/minitest-data)
 
 `Minitest::Data` provides Data-Driven-Test functionality to minitest/test.
