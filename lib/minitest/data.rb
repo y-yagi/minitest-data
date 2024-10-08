@@ -62,35 +62,28 @@ module Minitest
 
       attr_accessor :data_label, :data_attribute
 
-      def location
-        label_string = ""
-        label_string = "(#{self.data_label})" if self.data_label
-        loc = " [#{self.failure.location}]" unless passed? or error?
-        "#{self.class}##{self.name}#{label_string}#{loc}"
-      end
-
       def run
-        with_info_handler do
-          time_it do
-            capture_exceptions do
-              before_setup; setup; after_setup
-
-              if data_attribute
-                self.send self.name, data_attribute
-              else
-                self.send self.name
-              end
+        time_it do
+          capture_exceptions do
+            Minitest::Test::SETUP_METHODS.each do |hook|
+              self.send hook
             end
 
-            Minitest::Test::TEARDOWN_METHODS.each do |hook|
-              capture_exceptions do
-                self.send hook
-              end
+            if data_attribute
+              self.send self.name, data_attribute
+            else
+              self.send self.name
+            end
+          end
+
+          Minitest::Test::TEARDOWN_METHODS.each do |hook|
+            capture_exceptions do
+              self.send hook
             end
           end
         end
 
-        self
+        Minitest::Result.from self
       end
     end
 
@@ -111,15 +104,43 @@ module Minitest
           test_klass.data_attribute = value
 
           result = test_klass.run
-          raise "#{klass}#run _must_ return self" unless klass === result
+          raise "#{klass}#run _must_ return self" unless Minitest::Result === result
           result
         else
           super(klass, method_name)
         end
       end
     end
+
+    module Result
+      attr_accessor :data_label
+
+      class << self
+        def prepended(klass)
+          class << klass
+            prepend ClassMethods
+          end
+        end
+      end
+
+      module ClassMethods
+        def from(runnable)
+          r = super
+          r.data_label = runnable.data_label if defined?(runnable.data_label)
+          r
+        end
+      end
+
+      def location
+        label_string = ""
+        label_string = "(#{self.data_label})" if self.data_label
+        loc = " [#{self.failure.location.delete_prefix Minitest::Reportable::BASE_DIR}]" unless passed? or error?
+        "#{self.class}##{self.name}#{label_string}#{loc}"
+      end
+    end
   end
 end
 
 Minitest::Test.prepend(Minitest::Data::Test)
+Minitest::Result.prepend(Minitest::Data::Result)
 Minitest.prepend(Minitest::Data)
